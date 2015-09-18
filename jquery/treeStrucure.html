@@ -1,0 +1,217 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Build Expandable/Collapsible list with the order details</title>
+        <script src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
+
+    <style type="text/css">
+
+
+#menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.clear {
+    clear: both;
+}
+
+
+
+/* Elastic LIST  */
+
+#listContainer{
+  margin-top:15px;
+}
+
+#expList ul, li {
+    list-style: none;
+    margin:0;
+    padding:0;
+    cursor: pointer;
+}
+#expList p {
+    margin:0;
+    display:block;
+}
+#expList p:hover {
+    background-color:#121212;
+}
+#expList li {
+    line-height:140%;
+    text-indent:0px;
+    background-position: 1px 8px;
+    padding-left: 20px;
+    background-repeat: no-repeat;
+}
+
+/* shrink state for list element */
+#expList .collapsed {
+    background-image: url(plus.png);
+}
+/* explode state for list element
+#expList .expanded {
+    background-image: url(dash.png);
+}
+#expList {
+    clear: both;
+}
+
+.listControl{
+  margin-bottom: 15px;
+}
+.listControl a {
+    border: 1px solid #555555;
+    color: #555555;
+    cursor: pointer;
+    height: 1.5em;
+    line-height: 1.5em;
+    margin-right: 5px;
+    padding: 4px 10px;
+}
+.listControl a:hover {
+    background-color:#555555;
+    color:#222222;
+    font-weight:normal;
+}
+    </style>
+
+<script language="JavaScript">
+var  global_json_array;
+
+function populateData(){
+     data ='{"id":27336,"from":{"city":"NEW YORK","state":"NY","zip":"10001"},"to":{"city":"WASHINGTON","state":"DC","zip":"20001"},"lines":[{"weight":1000.1,"volume":1.0,"hazard":true,"product":"zpetrol"},{"weight":2000.0,"volume":2.0,"hazard":false,"product":"water"}],"instructions":"here be dragons"}';
+
+	   	var output="";
+		if (data.indexOf("ERROR") == 0){
+		   output = data;
+		   alert (data);
+
+                } else {
+                var json_obj = $.parseJSON(data);//parse JSON
+		            output+="<div id='listContainer'>";
+		            output+="<ul id='expList'><li> <font color='blue'><b>Order ID </b></font> "+ json_obj.id +"</li>";
+		            output+= "<li> <font color='blue'><b>From: </b></font><ul>";
+		            output+= "<li> City: " + json_obj.from.city +"</li>";
+		            output+= "<li> State: " + json_obj.from.state +"</li>";
+			    output+= "<li> Zip: " + json_obj.from.zip +"</li>";
+			    output+= "</ul> </li>";
+		            output+= "<li><font color='blue'><b>To: </b></font><ul>";
+		            output+= "<li> City: " + json_obj.to.city +"</li>";
+		            output+= "<li> State: " + json_obj.to.state +"</li>";
+			    output+= "<li> Zip: " + json_obj.to.zip +"</li>";
+			    output+= "</ul> </li>";
+
+			    output+= "<li> <font color='blue'><b>Lines </b></font><ul>";
+			    var json_array= json_obj.lines;
+			    global_json_array= json_obj.lines;
+
+			//json_array.sort(sort_by('weight', false, parseInt));
+			//json_array.sort(sort_by('product', false, function(a){return a.toUpperCase()}));
+			output+= "<div id='showlines'>";
+		            for (var i in json_array) {
+		                output+="<li> Line - " + i +"<ul> <li> Product: "+ json_obj.lines[i].product +"</li> <li> Weight:" + json_obj.lines[i].weight +"</li> <li> Volume: " + json_obj.lines[i].volume +"</li> <li> Hazard:"+ json_obj.lines[i].hazard +"</li> </ul> </li>";
+						console.log("<li> Line - " + i +"<ul> <li> Product: "+ json_obj.lines[i].product +"</li> <li> Weight:" + json_obj.lines[i].weight +"</li> <li> Volume: " + json_obj.lines[i].volume +"</li> <li> Hazard:"+ json_obj.lines[i].hazard +"</li> </ul> </li>");
+		            }
+		   output+= "</div>";
+
+		         output+="</ul> </li>";
+
+		         output+="<li> Instructions: "+ json_obj.instructions +" </li> </ul>";
+		                 output+="</div>";
+			}
+
+                    $('#newdata').html(output);
+}
+
+    /* sort function */
+var sort_by = function(field, reverse, modifier){
+
+   var key = modifier ?
+       function(x) {return modifier(x[field])} :
+       function(x) {return x[field]};
+
+   reverse = !reverse ? 1 : -1;
+
+   return function (a, b) {
+       return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+     }
+}
+
+/* dynamically strech/shrink tree   */
+function prepareList() {
+    $('#expList').find('li:has(ul)')
+    .click( function(event) {
+        if (this == event.target) {
+            $(this).toggleClass('expanded');
+            $(this).children('ul').toggle('medium');
+        }
+        return false;
+    })
+    .addClass('collapsed')
+    .children('ul').hide();
+};
+
+    $(document).ready(function () {
+
+        $("input[name='order-action']", $('#radioBtnDiv')).change(
+                function (e) {
+                    var myRadio = $('input[name=order-action]');
+                    var checkedValue = myRadio.filter(':checked').val();
+                    if (checkedValue == 'product') {
+					global_json_array.sort(sort_by('product', false, function(a){return a.toUpperCase()}));
+					var output="";
+					for (var i in global_json_array) {
+						 output+="<li> Line - " + (i) +"<ul> <li> Product: "+ global_json_array[i].product +"</li> <li> Weight:" + global_json_array[i].weight +"</li> <li> Volume: " + global_json_array[i].volume +"</li> <li> Hazard:"+ global_json_array[i].hazard +"</li> </ul> </li>";
+						 console.log("<li> Line - " + (i) +"<ul> <li> Product: "+ global_json_array[i].product +"</li> <li> Weight:" + global_json_array[i].weight +"</li> <li> Volume: " + global_json_array[i].volume +"</li> <li> Hazard:"+ global_json_array[i].hazard +"</li> </ul> </li>");
+
+					}
+                        $('#showlines').html(output);
+                        //$('#createDiv').show();
+                        //$('#showlines').hide();
+                    }
+                    else {
+                    global_json_array.sort(sort_by('weight', false, parseInt));
+                    var output="";
+					for (var i in global_json_array) {
+						 output+="<li> Line - " + (i) +"<ul> <li> Product: "+ global_json_array[i].product +"</li> <li> Weight:" + global_json_array[i].weight +"</li> <li> Volume: " + global_json_array[i].volume +"</li> <li> Hazard:"+ global_json_array[i].hazard +"</li> </ul> </li>";
+					}
+                        $('#showlines').html(output);
+                        //$('#createDiv').hide();
+                        $('#showlines').show();
+                    }
+                });
+    });
+
+/*  on loading the document               */
+
+$(document).ready( function() {
+
+	populateData();
+    prepareList()
+});
+//
+</script>
+    </head>
+    <body>
+        <h1><b>Build Expandable/Collapsible list with the order details</b></h1>
+        <h2><i> This html uses only plain jquery functions and the css to make the tree structure works.</i></h2>
+        <h4> <b>Click on any of the below lines to see how it works </b></h4>
+
+		<div id="radioBtnDiv">
+		     <table width="100%">
+		          <tr>
+		             <td>Sort by Product
+		             <input name="order-action" type="radio"  value="product"/></td>
+			      </tr>
+			        <td>Sort by Weight
+			        <input name="order-action" type="radio" value="weight"/></td>
+			     </tr>
+			</table>
+        </div>
+            <div id="newdata"> </div>
+    </body>
+</html>
